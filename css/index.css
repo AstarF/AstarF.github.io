@@ -1,0 +1,74 @@
+.ppage-fixedheader {
+    background-color: black;
+    backdrop-filter: blur(5px); 
+    padding-left: 50px;
+    padding-right: 50px;
+    z-index: 9999;
+    width: 100%;
+    height: 50px;
+    box-shadow: 0px 0px 1px #a7a7a7;
+}
+
+.ppage-shadow-text{
+    text-shadow: 2px 2px #a078a3;
+}
+
+.ppage-topback {
+    background-image: url(../public/static/images/top_back7.png);
+    background-position-x: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 39vh;
+}
+
+.ppage-topback-title {
+    position: absolute;
+    top: 15vh;
+    width: 98.8vw;
+    text-align: center;
+    color: #fff;
+    font-style: italic;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    user-select: none;
+}
+
+.ppage-footer-continer {
+    position: relative;
+    background-image: url(../public/static/images/bottom.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    overflow: hidden;
+}
+
+.progressBar{
+    top:50px;
+}
+
+@media all and (max-aspect-ratio: 3/5) {
+    .ppage-topback {
+        height: 20vh;
+    }
+    .plogo {
+        margin-top: 17.5vh;
+    }
+    .hello-container {
+        padding-top: 0vh;
+        height: 15vh;
+    }
+    .start-button {
+        margin-top: 3vh;
+    }
+    .ppage-footer-continer {
+        height: 20vh;
+    }
+    .ppage-footer-continer-mask {
+        height: 18vh;
+    }
+    .ppage-footer-bottom {
+        top: 5vh;
+    }
+    .footer-beian {
+        margin-top: 3vh;
+    }
+}

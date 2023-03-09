@@ -1,0 +1,246 @@
+---
+title: 'Unity 制作萌系live2d桌宠：屏幕自适应+交互'
+date: 2022-03-05T14:30:14Z
+lastmod: '2021-02-01'
+tags: ['C#', 'unitt', 'live2d']
+draft: false
+summary: '该方法适用于win10，win11暂未更新'
+layout: PostLayoutCenter
+bibliography: references-data.bib
+title_img: '/static/blogs/howtouseunitytomakecutelive2dtablepet2/00004-2109776184.png'
+auther_bref: '续接“如何使用unity制作萌萌的live2d桌宠”，进一步优化桌宠，使之可以自适应电脑屏幕，并且增加一些交互'
+---
+
+# 目录
+
+<TOCInline toc={props.toc} exclude="Overview" toHeading={2} />
+
+*转自本人CSDN，该方法适用于win10*
+
+本文在之前的博客"如何使用unity制作萌萌的live2d桌宠"的基础上对项目继续改进，解决了屏幕自适应和交互的问题。
+
+先来看看效果：
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2020090116345768.gif#pic_center)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200901163521674.gif#pic_center)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200901163938664.gif#pic_center)
+
+
+# 准备工作
+准备工作和环境配置在上一篇博客已介绍，这里不再赘述。但还要提一点的是项目仍在 **unity2018.4.24.f1（很重要）** 的环境下开发（unity2019无法正常工作，其他版本未测试），操作系统为Windows。
+
+# 使用unity显示live2d人物
+上篇博客介绍过，这里简单说一下流程：
+* 下载Live2D_SDK_Unity_2.1.04_2_jp，将里面的文件拷贝到unity的目录，然后导入Live2DFrameworkNeeds包
+* 将live2d素材放入unity目录中的Resources文件夹
+* 新建一个空对象用于显示人物，取名为haru（名字随意）
+* 为空对象添加Mesh Filter、MeshCllider、L App Model Proxy、My Game Controller和Audio Source，相关参数参考上篇博客。
+
+运行程序应该有下面的效果
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200831223105874.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+
+# 全屏+背景透明+点击穿透+置顶
+导出程序的时候必须使背景透明，否则就谈不上桌宠了。这里直接给出背景透明+点击穿透的代码，将此代码拖动到一个空对象上，然后把相机的Clear Flags设为Solid Color，并把背景颜色调成黑色。（[代码基于这篇博客修改](https://blog.csdn.net/q493201681/article/details/65936592)）
+```
+using UnityEngine;
+using System;
+using System.Runtime.InteropServices;
+
+public class TablePetBackSample : MonoBehaviour
+{
+    public string strProduct;//项目名称
+    private int currentX;
+    private int currentY;
+    #region Win函数常量
+    private struct MARGINS
+    {
+        public int cxLeftWidth;
+        public int cxRightWidth;
+        public int cyTopHeight;
+        public int cyBottomHeight;
+    }
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetActiveWindow();
+
+    [DllImport("user32.dll")]
+    static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+    [DllImport("user32.dll")]
+    static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    [DllImport("user32.dll")]
+    static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    static extern int SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, int uFlags);
+
+    [DllImport("user32.dll")]
+    static extern int SetLayeredWindowAttributes(IntPtr hwnd, int crKey, int bAlpha, int dwFlags);
+
+    [DllImport("Dwmapi.dll")]
+    static extern uint DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS margins);
+    [DllImport("user32.dll")]
+    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, uint dwNewLong);
+    //private const int WS_POPUP = 0x800000;
+    private const int GWL_EXSTYLE = -20;
+    private const int GWL_STYLE = -16;
+    private const int WS_EX_LAYERED = 0x00080000;
+    private const int WS_BORDER = 0x00800000;
+    private const int WS_CAPTION = 0x00C00000;
+    private const int SWP_SHOWWINDOW = 0x0040;
+    private const int LWA_COLORKEY = 0x00000001;
+    private const int LWA_ALPHA = 0x00000002;
+    private const int WS_EX_TRANSPARENT = 0x20;
+    #endregion
+    
+    IntPtr hwnd;
+    void Awake()
+    {
+
+#if UNITY_EDITOR
+        print("unity内运行程序");
+#else
+        hwnd = FindWindow(null, strProduct);
+        int intExTemp = GetWindowLong(hwnd, GWL_EXSTYLE);
+        SetWindowLong(hwnd, GWL_EXSTYLE, intExTemp | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+        SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_BORDER & ~WS_CAPTION);
+        currentX = 0;
+        currentY = 0;
+        SetWindowPos(hwnd, -1, currentX, currentY, Screen.currentResolution.width, Screen.currentResolution.height, SWP_SHOWWINDOW);
+        var margins = new MARGINS() { cxLeftWidth = -1 };
+        DwmExtendFrameIntoClientArea(hwnd, ref margins);     
+#endif
+    }
+}
+```
+相机参数：
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200831233755592.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+
+
+注意代码中strProduct一定要与Inspector种的Product Name一致，否则会出现奇怪的Bug（**很重要，可能会影响unity导出的同名程序使用**）。
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2020083123291324.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+效果如下：
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200831234055919.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+可以看到背景是透明的，而且不妨碍鼠标网页的交互。
+
+# 屏幕自适应
+桌宠不能挡在中间影响我们正常使用电脑，我们需要让她处于右下角的位置并适应屏幕分辨率。首先我们需要把相机的Projection调整为Orthographic，
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200901165357904.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+然后编写可以根据屏幕分辨率动态的调整桌宠的大小和位置的代码。代码如下，把代码拖到有live2d组件的对象上（即haru上）就可。
+```
+using UnityEngine;
+
+public class RolePositionControl : MonoBehaviour
+{
+    float rolewidth = 520;
+    float roleheight = 520;
+    private GameObject MainCamera;
+    // Start is called before the first frame update
+    void Start()
+    {
+        MainCamera = GameObject.Find("Main Camera");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        //保持角色的大小和位置
+        float frustumHeight = MainCamera.GetComponent<Camera>().orthographicSize * 2;
+        float frustumWidth = frustumHeight * MainCamera.GetComponent<Camera>().aspect;
+        float rolewidth = GetComponent<MeshFilter>().mesh.bounds.size.x;
+        float roleheight = GetComponent<MeshFilter>().mesh.bounds.size.x;
+        transform.localPosition = new Vector3((frustumWidth - rolewidth) / 2, -(frustumHeight - roleheight) / 2, transform.localPosition.z);
+    }
+}
+```
+
+效果如下：
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200901121447276.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+
+# 交互
+现在我们的桌宠只能看不能摸，也不会发出声音，下面我们来编写一些交互的代码。本人不熟悉unity的live2d编程，所以直接参照live2d框架中My Game Controller进行简单的改写。代码如下，为了不影响原来的包可以新建一个自己的My Game Controller组件（此处我命名为GameControl_X ），然后替换替换haru上的My Game Controller。
+>为何要改写My Game Controller？
+>原先的My Game Controller通过Input.GetMouseButton等接口获取鼠标状态，这样的方法在本项目中是无效的，前面的点击穿透功能会使程序无法检测到鼠标按下。所以这里需要使用windows接口来监测鼠标是否按下。
+
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.Runtime.InteropServices;
+public class GameControl_X: MonoBehaviour
+{
+    private static LAppLive2DManager instance;
+    private float lastX = -1;
+    private float lastY = -1;
+    private GameObject MainCamera;
+    //Windows接口
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
+    private const int VK_LBUTTON = 0x01; //鼠标左键
+    private const int VK_RBUTTON = 0x02; //鼠标右键
+
+    //动画辅助key
+    string AniKey = "Begin";
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        MainCamera = GameObject.Find("Main Camera");
+        if (MainCamera != null)
+        {
+            if (MainCamera.GetComponent<Camera>().orthographic)
+            {
+                LAppLive2DManager.Instance.SetTouchMode2D(true);
+
+            }
+            else
+            {
+                Debug.Log("\"Main Camera\" Projection : Perspective");
+
+                LAppLive2DManager.Instance.SetTouchMode2D(false);
+            }
+        }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (GetAsyncKeyState(VK_LBUTTON) != 0)
+        {
+            if (AniKey == "Begin")
+            {
+                lastX = Input.mousePosition.x;
+                lastY = Input.mousePosition.y;
+
+                LAppLive2DManager.Instance.TouchesBegan(Input.mousePosition);
+                AniKey = "Ani";
+            }
+            else
+            {
+                if (lastX == Input.mousePosition.x && lastY == Input.mousePosition.y)
+                {
+                    return;
+                }
+                lastX = Input.mousePosition.x;
+                lastY = Input.mousePosition.y;
+                LAppLive2DManager.Instance.TouchesMoved(Input.mousePosition);
+                AniKey = "Begin";
+            }
+        }
+        else
+        {
+            if (AniKey == "Ani")
+            {
+                lastX = -1;
+                lastY = -1;
+                LAppLive2DManager.Instance.TouchesEnded(Input.mousePosition);
+                AniKey = "Begin";
+            }
+
+        }
+    }
+}
+```
+
+效果如下，鼠标按下后haru会看向鼠标的位置，也可以做点击、摸头等交互。
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200901001714537.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+***
+到此大功告成，懂live2d的同学还可以将haru替换成自己喜欢的萌物。

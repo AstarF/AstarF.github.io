@@ -1,0 +1,341 @@
+---
+title: 'Phoenix Introduce'
+date: 2023-03-06T14:30:14Z
+lastmod: '2021-02-01'
+tags: ['Cpp', 'webserver', 'guide']
+draft: false
+summary: '有关个人项目Phoenix的介绍，PHOENIX是一个开发中的、基于模块和事件驱动的高性能轻量级web服务器。'
+layout: PostLayoutCenter
+bibliography: references-data.bib
+title_img: '/static/blogs/PhoenixIntroduce/00021-4025592425.png'
+auther_bref: '很基础的项目，功能有限，不知道之后会不会更新'
+---
+
+# 简介
+
+PHOENIX是一个开发中的、基于模块和事件驱动的高性能轻量级web服务器，它的内核是高度模块化的基于Reactor模式的事件处理框架，Reactor的IO复用保证了它的效率，模块化则保证了它的灵活性。 当然，PHOENIX包含Http模块，它支持GET、POST方法，支持url传参，支持请求实体中存放x-form格式的数据， 此外，PHOENIX还包含一个简洁紧凑的mysql模块，能够满足一些基本业务要求。
+
+这里有一个[demo](http://43.138.29.143:55398/)，这是一个基于vue搭建的私人图库，后端所有功能均由PHOENIX提供
+
+
+![logo](/static/blogs/PhoenixIntroduce/logo2.jpg)
+
+# 从源码编译
+
+切换到build目录，然后依次执行
+
+```bash
+cmake .
+make
+```
+
+然后可在bin目录找到编译好的程序
+
+# 使用说明
+
+## 创建基础的服务
+
+```Cpp
+//定义一个方法
+void print_hello(px_mysql_connect* msconn, px_http_request* req, px_http_response_data* res) {
+    (*res)("success! ", px_http_response_type::TEXT);
+}
+
+int main(int argc, char** argv) {
+    px_http_server serv;
+    serv.initsocket();
+    px_http_module* interface_module = serv.interface_module;
+    //在这里定义自己的业务代码
+    px_http_module* test_module = serv.create_module("test");
+    test_module->add_interface("print", print_hello, "get");
+
+    serv.run_service();
+}
+```
+
+**运行结果**
+
+程序启动后，在浏览器地址栏输入ip:端口号(默认55398)/test/print，即可得到以下结果
+
+![image-20220620195918316](/static/blogs/PhoenixIntroduce/imageasfsdf.jpg)
+
+
+## 使用HTTP 模块
+
+px_http_server对底层module进行了一层封装，提供了简单的创建模块的方式
+
+```Cpp
+/*同上，需要先定义一个方法
+* msconn表示数据库连接
+* req表示解析好的请求
+* res表示返回值
+*/
+void print_hello(px_mysql_connect* msconn, px_http_request* req, px_http_response_data* res) {
+    (*res)("success! ", px_http_response_type::TEXT);
+}
+//...
+int main(int argc, char** argv) {
+    //...
+    px_http_module* interface_module = serv.interface_module;
+	//创建一个模块
+    px_http_module* test_module = serv.create_module("test");
+    //将上面的方法添加到模块里
+    test_module->add_interface("print", print_hello, "get");
+    //将创建好的方法添加到顶层接口模块里
+    serv.interface_module->add_module(test_module);
+	//...
+    //当然可以不创建test模块，直接把print添加到顶层接口模块里
+    interface_module->add_interface("print2", print_hello, "get");
+}
+```
+
+## 使用原始模块
+
+可以直接基于原始模块进行开发,下面代码与上面创建接口“print2”的代码效果一样，但是复杂一些。
+
+```Cpp
+/*同上，需要先定义一个方法
+* msconn表示数据库连接
+* req表示解析好的请求
+* res表示返回值
+*/
+void print_hello(px_mysql_connect* msconn, px_http_request* req, px_http_response_data* res) {
+    (*res)("success! ", px_http_response_type::TEXT);
+}
+//...
+int main(int argc, char** argv) {
+    //...
+    px_http_module* interface_module = serv.interface_module;
+	//创建一个模块
+    m_response_config* config = new m_response_config;
+    config->func = print_hello;
+    config->method = "get";
+    px_module* http_test_process = new px_module;
+    http_test_process->set_name("test_process");
+    http_test_process->top_level = false;
+    http_test_process->m_type = pxmodule_type::PROCESS;
+    http_test_process->callback_func = http_response_json_func;//http_response_json_func是预定义好的方法，它做了许多工作......它的取名有点奇怪，事实上它不止能返回json格式的数据，但暂时就这样吧
+    //这里绕了个圈子，callback_func的参数设置为http_response_json_func，帮助我们做一些http报文的相关操作，而http_response_json_func中会调用通过config传递的print_hello方法
+    http_test_process->priority = 0;
+    http_test_process->config = (void*)config;
+    interface_module->mod->add_dispath("print2", http_test_process);
+	//...
+}
+```
+
+**运行结果**
+
+![image-20220620202504995](/static/blogs/PhoenixIntroduce/image-20220620202504995.png)
+
+原始模块能实现多种多样的功能，如要使用需要配合代码查看后续说明。
+
+
+```Cpp
+//首先需要创建用于保存每一条记录的实体
+struct entity_image {
+    string id;
+    string name;
+    string path;
+    string create_time;
+    string update_time;
+    //每个实体必须包含一个parse函数，函数的定义必须为void parse(const MYSQL_ROW& row){...}
+    void parse(const MYSQL_ROW& row) {
+        id = row[0];
+        name = row[1];
+        path = row[2];
+        create_time = row[3];
+        update_time = row[4];
+    }
+};
+
+void somefunction(px_mysql_connect* msconn, px_http_request* req, px_http_response_data* res) {
+//...
+    char buffer[128];//存储sql的buffer
+    strcpy(buffer, "SELECT * FROM px_images WHERE name not like 'xxx';");//sql语句
+    sqlres<entity_image_tojson> queryres;//保存查询结果
+    msconn->execute_sql(buffer, queryres);//开始查询,execute_sql有一个重载函数，只包含buffer一个参数，该函数用来处理没有返回值的sql操作，例如insert,update,delete等
+    (*res)(restojson(queryres), px_http_response_type::JSON);
+    for(auto &t:queryres.list){
+        //...
+        cout<<t.name<<" "<<t.path<<endl;
+        //...
+    }
+//...
+}
+```
+
+# Web Server工作流程
+
+PHOENIX的工作流程非常简单，如下面流程图所示。三次握手建立连接后，对于浏览器的每一个请求，都将其送入如下“LOOP‘，对于每一次http请求，首先读取整个报文，然后创建一个http request对象，接着解析报文首部，然后执行业务相关的代码，并将返回值封装成http response报文，写回到套接字。
+
+循环并不是无限的，对于使用短链接的http请求，write完成后，循环就结束；而对于使用长连接的请求，wirte完成后会等待下一次请求，直到客户端主动断开连接，或者超时事件终止连接（没错，对于每个请求，phoenix默认设置了一个超时事件，超时后自动断开连接）。
+
+在下图中，每一个流程之间都可以很方便地插入新的代码。这就是模块化的好处，可以很自然地在模块与模块之间插入新的模块而不用更改旧的代码。比如说，可以在http header后插入一个http过滤模块，只允许带有特定首部新的的请求通过，也可以在write后插入一个日志模块，进行一些簿记工作。
+
+![image-20220618202910949](/static/blogs/PhoenixIntroduce/image-20220618202910949.png)
+
+# 基于模块 && 事件驱动
+
+PHOENIX是一个基于模块的、事件驱动的web服务器，其工作流程如下图所示。服务器在运行过程中，包含一些静态对象和一些动态对象，下面简要介绍：
+
+* Module/Static：这部分包含用户定义静态模块，每个模块都包含一个可自定义的、业务相关的函数，任意模块都可以包含子模块。模块为连接和事件的生成提供了模板，同时又服务于连接和事件。在PHOENIX中一个模块必须是静态的，这意味着它在定义之后就不能改变，这是合理的，因为模块针对的不是某一个连接或者事件，而是一类连接和事件。
+* Event/Dynamic：这部分包含PHOENIX在运行中生成的对象，包含connection和event。connection对应于一个连接或者文件描述符，记录连接相关的属性，而每个connection包含三类事件：读事件、写事件和超时事件。每当收到一个tcp连接的时候，就会生成一个connection对象，同时，会根据预先定义好的模块，初始化connection对象的读写超时事件。
+* Epoll/Dynamic：PHOENIX使用linux提供的epoll方法实现了了一个非阻塞的I/O多路复用程序，每当初始化、收到新的连接、读事件执行完毕、写事件执行完毕或者是超时事件执行完毕时，PHOENIX都可能向I/O多路复用程序注册并监听新的事件。而每当事件发生时，I/O多路复用程序都会通知当前线程事件就绪。线程收到通知后，会按照事件的优先级以不同的策略处理事件。
+
+![ph1](/static/blogs/PhoenixIntroduce/PHOENIX (1).jpg)
+
+接下来我们以一个http请求的处理过程为例说明PHOENIX的工作方式。
+
+1. PHOENIX启动后进行一些初始化，并使soket accept模块将监听指定的端口。
+2. 一旦端口有数据到来soket accept模块会创建一个connection对象并使用socket read模块、socket write模块和socket timeout模块初始化connnection对象的read、write和timeout事件。
+3. connnection对象的read、write事件被添加到epoll的内核事件表中，timeout事件则被添加到timer中
+4. 当新的连接上有数据到来时，epoll通知当前线程事件读就绪，然后线程通过socket read模块中预先定义的方法读取socket上的数据并存入connection的读缓冲区中，最后调用http request模块提供的方法解析http请求，并将请求送入http dispatch模块将请求导入对应的接口
+5. 请求被传递给用户定义的业务代码，业务代码处理请求并返回结果写入connection的写缓冲区中
+6. epoll检测到文件可写通知当前线程进行写入。线程通过socket wirte模块中预先定义的方法将返回结果发送给客户浏览器
+7. timeout事件随时可能发生，timeout事件发生时，由当前线程调用socket timout模块提供的方法处理超时事件。
+
+# 组件介绍
+
+## Module
+
+Module部分的主要内容是三种模块，三个方法。
+
+三种模块指的是：Event模块、Porcess模块和Dispatch模块。
+
+* Event模块：用于初始化一个Event对象、为Event对象提供Process list中的一系列函数的调用方法。process list是一个Process模块链表，link list是一个Event模块链表(可能包括一个读事件模块、写事件模块和若干超时事件模块)，而next指向同级Event模块
+* Process模块：模块中包含一个function，这是一个函数指针，用于指向业务代码，process list是仍然一个Process模块链表。
+* Dispatch模块：Process模块的变种，模块中包含一个function，这是一个函数指针，用于指向计算key值的函数，process map是一个string类型key、Process模块类型值的map。Dispatch模块可以使用module_dispath方法根据key值调用相关的模块函数。
+
+![image-20220620153103522](/static/blogs/PhoenixIntroduce/image-20220620153103522.png)
+
+三种方法指的是：module_link、module_process和module_dispath方法
+
+* module_link：这个方法首先会遍历模块的link list，对link list中的每个元素调用event_create方法，初始化connection的读、写和超时事件。
+* module_process：这个方法首先会遍历模块的process list，并递归地对process list中的每个元素调用module_process方法，然后，会按照module的类别，调用不同的处理函数。对于Event模块，会调用event_process方法，这个方法负责事件执行完后进行重新初始化，还有事件完成的的收尾工作；对于Process模块和Dispatch模块，module_process直接调用他们的function。
+* module_dispath：功能很简单，根据给定参数计算hash值，然后从process中匹配到相应的Process Module，然后执行它的module_process方法。
+
+module_link：
+
+![](/static/blogs/PhoenixIntroduce/PHOENIX (3).jpg)
+
+module_process：
+
+![image-20220620153103522](/static/blogs/PhoenixIntroduce/PHOENIX (4).jpg)
+
+
+## Event
+
+事件分为三类：读事件、写事件和超时事件
+
+读事件负责接收和处理连接上发送来的数据，写事件负责生成并发送业务代码生成的数据。而超时事件常用来关闭存活时间过长的连接。
+
+一个连接只能有一个读事件和一个写事件，但是可以由若干个超时事件。
+
+每个事件与一个Event Module关联，而Event Module包含若干个Process Module和Event Module，因而每当事件触发时将沿着Module连成的调用链调用一系列方法。
+
+事件分为立即执行和延迟执行两种，对于立即执行的事件，epoll返回后就要立刻执行，而对于延迟执行的事件，epoll返回后，将事件存入延迟执行队列中，稍后再执行。
+
+我们可以通过编写一个拥有特定优先级的Process Module在调用链的任意位置插入任意代码。
+
+## Connection
+
+PHOENIX使用conncetion对象表示一个文件描述符（当然，我们的tcp连接也用一个connection表示）。
+
+connection不是预先定义好的，每当socket接收一个连接时，就会创建一个connection对象。
+
+connection包含两个缓冲区，一个是read缓冲，一个是write缓冲，用于存放客户端发来的数据和服务器将要发送的数据。
+
+## Epoll
+
+I/O多路复用使用了linux提供的一系列epoll方法完成，项目中仅仅对其进行简单的封装。
+
+## Timer
+
+timer实现为一个单例，其中包含一个链表，里面存放这按照到期时间递增排序的timeout事件。在每个事件循环中，当前线程检查链表顶端的事件是否到期，如果到期则执行之。
+
+## Pool
+
+### Thread Pool
+
+这是一个简单的线程池，其运作方式特别简单，使用全局的互斥锁实现内核事件表的互斥访问，当线程取得读、写或超时事件的处理权限时，可以依据事件的immediacy属性选择是否立刻处理，如果immediacy属性为false，则将事件送入Delay List，获取完事件以及处理完立刻处理的事件后，线程让出互斥锁，然后处理Delay LIst里的事件。
+
+![image-20220621143604238](/static/blogs/PhoenixIntroduce/image-20220621143604238.png)
+
+### Object Pool
+
+为了减少创建对象的开销，PHOENIX在启动时会初始化一系列对象池。作用的对象包括但不限于：connection对象，event对象，px_mysql_connect对象等。
+
+### Database Connection Pool
+
+px_mysql_connect对象用于管理一个数据库连接，将px_mysql_connect放入对象池中，就完成了最简单的数据库连接池。
+
+> Memory pool
+>
+> 目前项目里没有实现内存池，而是很粗糙地给每个connection分配的2048字节的read buffer和write buffer。当内存不够时，直接使用new分配更大的空间。
+
+## HTTP
+
+http协议涉及到的内容特别多，这里最实现了一些基本的功能。
+
+目前支持请求：
+
+* get请求：可在url中携带参数
+* post请求：支持x-from格式的参数
+
+支持的响应：
+
+* 文件
+* text文本
+* json
+* x-from
+
+## HTTP Server
+
+Http Server将Module封装了一遍，提供了一系列简洁的接口，用以快速搭建项目，是用户能够集中精力解决业务问题。
+
+## Mysql
+
+我们对数据库的使用进行了封装，用户不需要进行底层的编码，直接使用提供好的接口即可。
+
+# 压力测试
+
+本项目使用webbench-1.5进行压力测试，测试代码与结果如下：
+
+1. 获取一张图片
+
+```bash
+webbench -c 5000 -t 60 http://127.0.0.1:55398/images/78.jpg
+```
+
+**结果：**
+
+![image-20220621183805542](/static/blogs/PhoenixIntroduce/image-20220621183805542.png)
+
+(可以发现bytes/sec处是一个负值，这显然是溢出了，这张图片大小为几百k)
+
+2. 获取一个网页
+
+```bash
+webbench -c 5000 -t 60 http://127.0.0.1:55398:55398/main
+```
+
+**结果：**
+
+![image-20220621183210529](/static/blogs/PhoenixIntroduce/image-20220621183210529.png)
+
+3. 做一次数据库查询
+
+```bash
+webbench -c 5000 -t 60 http://127.0.0.1:55398/image/backgroundimagelist
+```
+
+**结果：**
+
+![image-20220621194925827](/static/blogs/PhoenixIntroduce/image-20220621194925827.png)
+
+# 请看这里
+
+这是一个青涩的尝试，一个未完成的项目。它的实现的很粗糙，http、mysql等模块也相当不完整，后续的修改将不定时地更新。
+
+最后，这是项目的[github]()地址，各位路过的大佬请不吝赐教，小弟感激不尽。
+

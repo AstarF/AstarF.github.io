@@ -1,0 +1,161 @@
+---
+title: '如何使用unity制作萌萌的live2d桌宠'
+date: 2022-03-03T14:30:14Z
+lastmod: '2021-02-01'
+tags: ['C#', 'unitt', 'live2d']
+draft: false
+summary: '该方法适用于win10，win11暂未更新'
+layout: PostLayoutCenter
+bibliography: references-data.bib
+title_img: '/static/blogs/howtouseunitytomakecutelive2dtablepet/petgirl.png'
+auther_bref: '突发奇想使用live2d和unity做一个桌宠，查找之下发现真的有相关技术，而且难度也不是很大，于是便有了此文。'
+---
+
+
+*转自本人CSDN，该方法适用于win10*
+
+先看一下效果：
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200714000728641.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200714000816978.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+# 准备工作
+环境（**很重要**）： **unity2018.4.24.f1** （unity2019无法用本文的方法实现背景透明，其他版本未测试），操作系统为Windows
+相关包：包括Live2D_SDK_Unity_2.1.04_2_jp和Live2DFrameworkNeeds
+live2d素材：本文使用官方的haru小姐姐，大家可以找自己感兴趣的素材。
+（本文提供相关包和live2d素材）
+# 环境配置
+**（unity live2d高手请略过）**
+1. 下载Live2D_SDK_Unity_2.1.04_2_jp，将里面的framework，lib，tool文件夹拖入unity项目的assest中
+2. 导入Live2DFrameworkNeeds包
+(导入包后，如果提示'AudioClip' does not contain a constructor that takes 0 arguments，双击错误提示，找到错误代码处按照本节最后的代码进行修改即可)
+3. 将live2d素材放入unity目录中的Resources文件夹（**务必放在Resources里**）
+
+
+[本文用到的相关SDK以及素材](https://pan.baidu.com/s/1-Rz8p7nSaU9XEdPqtd8Pow)提取码：vet2
+
+
+错误'AudioClip' does not contain a constructor that takes 0 arguments修改方法
+```C#
+	public static AudioClip LoadAssetsSound(string filename)
+	{
+		if(LAppDefine.DEBUG_LOG) Debug.Log( "Load voice : "+filename);
+		AudioClip player;
+		try
+		{
+            player = (AudioClip)(Resources.Load(filename)) as AudioClip;
+            return player;
+        }
+		catch (IOException e)
+		{
+			Debug.Log( e.StackTrace );
+            return null;
+		}
+	}
+```
+# 使用unity显示live2d人物
+1. 新建一个空对象用于显示人物，我将它取名为haru
+2. 为空对象添加以下组件：
+	 Mesh Filter ：并且指定Mesh为Live2D_Canvas(如果你没有这个请导入Live2DFrameworkNeeds包)
+	 MeshCllider：在添加Mesh Filter 后再添加
+	 L App Model Proxy：Path指定为live2d model的json文件，Scene No不用管（除非你知道它是啥）
+	 My Game Controller：直接添加就好了
+	 Audio Source：直接添加就好了
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713231050741.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+3. 调整相机和live2d对象的角度和位置（下面是我的参数，没必要照搬）
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713231857362.png#pic_center)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713231816491.png#pic_center)
+4. 运行游戏看看，与小姐姐互动一下，看看程序是否正常运行
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713232240709.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+# 背景透明
+重头戏来了，首先新建一个C#代码，命名为TablePetBack，然后将下面代码粘贴进去（[代码基于这篇博客修改](https://blog.csdn.net/q493201681/article/details/65936592)）
+```
+using UnityEngine;
+using System.Collections;
+using System;
+using System.Runtime.InteropServices;
+using System.IO;
+
+public class TablePetBack : MonoBehaviour
+{
+    public string strProduct;//项目名称
+    public int windowWidth;//窗口宽度
+    public int windowHeight;//窗口高度
+    private int currentX;
+    private int currentY;
+    #region Win函数常量
+    private struct MARGINS
+    {
+        public int cxLeftWidth;
+        public int cxRightWidth;
+        public int cyTopHeight;
+        public int cyBottomHeight;
+    }
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetActiveWindow();
+    [DllImport("user32.dll")]
+    static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+    [DllImport("user32.dll")]
+    static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    [DllImport("user32.dll")]
+    static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+    [DllImport("user32.dll")]
+    static extern int SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, int uFlags);
+    [DllImport("user32.dll")]
+    static extern int SetLayeredWindowAttributes(IntPtr hwnd, int crKey, int bAlpha, int dwFlags);
+    [DllImport("Dwmapi.dll")]
+    static extern uint DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS margins);
+    [DllImport("user32.dll")]
+    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, uint dwNewLong);
+
+    private const int GWL_EXSTYLE = -20;
+    private const int GWL_STYLE = -16;
+    private const int WS_EX_LAYERED = 0x00080000;
+    private const int WS_BORDER = 0x00800000;
+    private const int WS_CAPTION = 0x00C00000;
+    private const int SWP_SHOWWINDOW = 0x0040;
+    private const int LWA_COLORKEY = 0x00000001;
+    private const int LWA_ALPHA = 0x00000002;
+    private const int WS_EX_TRANSPARENT = 0x20;
+    private const int ULW_COLORKEY = 0x00000001;
+    private const int ULW_ALPHA = 0x00000002;
+    private const int ULW_OPAQUE = 0x00000004;
+    private const int ULW_EX_NORESIZE = 0x00000008;
+    #endregion
+    IntPtr hwnd;
+    // Use this for initialization
+    void Awake()
+    {
+        Screen.fullScreen = false;
+#if UNITY_EDITOR
+        print("编辑模式不更改窗体");
+#else
+        hwnd = FindWindow(null, strProduct);
+        //去边框并且透明
+        SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED);
+        int intExTemp = GetWindowLong(hwnd, GWL_EXSTYLE);
+        SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_BORDER & ~WS_CAPTION);
+
+        //保持右下角间位置
+        currentX = Screen.currentResolution.width - windowWidth;
+        currentY = Screen.currentResolution.height - windowHeight;
+        SetWindowPos(hwnd, -1, currentX, currentY, windowWidth, windowHeight, SWP_SHOWWINDOW);
+        var margins = new MARGINS() { cxLeftWidth = -1 };
+        DwmExtendFrameIntoClientArea(hwnd, ref margins);
+#endif
+    }
+
+    void OnApplicationQuit()
+    {
+        SetWindowPos(hwnd, -1, currentX, currentY, 0, 0, SWP_SHOWWINDOW);
+    }
+}
+```
+新建一个空对象，将TablePetBack添加上去。
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200714092912984.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70)
+有3个参数需要设置
+  Window Width：桌宠宽度
+  Window Height：桌宠高度
+  StrProduct：程序名（需要与Player Setting里的游戏名一致，设置方法见下图）
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713234337956.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+将相机的Clear Flagss设置为Solid Color，颜色选择黑色。
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713234201638.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+大功告成，把项目build一下，然后运行，就可以一边敲代码，一边萌妹子互动了。
