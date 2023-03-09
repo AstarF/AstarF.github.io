@@ -15,8 +15,8 @@ auther_bref: '突发奇想使用live2d和unity做一个桌宠，查找之下发�
 *转自本人CSDN，该方法适用于win10*
 
 先看一下效果：
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200714000728641.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200714000816978.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/1.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/2.png#pic_center)
 # 准备工作
 环境（**很重要**）： **unity2018.4.24.f1** （unity2019无法用本文的方法实现背景透明，其他版本未测试），操作系统为Windows
 相关包：包括Live2D_SDK_Unity_2.1.04_2_jp和Live2DFrameworkNeeds
@@ -59,12 +59,12 @@ live2d素材：本文使用官方的haru小姐姐，大家可以找自己感兴�
 	 L App Model Proxy：Path指定为live2d model的json文件，Scene No不用管（除非你知道它是啥）
 	 My Game Controller：直接添加就好了
 	 Audio Source：直接添加就好了
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713231050741.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/3.png#pic_center)
 3. 调整相机和live2d对象的角度和位置（下面是我的参数，没必要照搬）
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713231857362.png#pic_center)
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713231816491.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/4.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/5.png#pic_center)
 4. 运行游戏看看，与小姐姐互动一下，看看程序是否正常运行
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713232240709.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/6.png#pic_center)
 # 背景透明
 重头戏来了，首先新建一个C#代码，命名为TablePetBack，然后将下面代码粘贴进去（[代码基于这篇博客修改](https://blog.csdn.net/q493201681/article/details/65936592)）
 ```
@@ -150,12 +150,12 @@ public class TablePetBack : MonoBehaviour
 }
 ```
 新建一个空对象，将TablePetBack添加上去。
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200714092912984.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/7.png#pic_center)
 有3个参数需要设置
   Window Width：桌宠宽度
   Window Height：桌宠高度
   StrProduct：程序名（需要与Player Setting里的游戏名一致，设置方法见下图）
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713234337956.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/8.png#pic_center)
 将相机的Clear Flagss设置为Solid Color，颜色选择黑色。
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200713234201638.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JlRHJlYW1tZQ==,size_16,color_FFFFFF,t_70#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/9.png#pic_center)
 大功告成，把项目build一下，然后运行，就可以一边敲代码，一边萌妹子互动了。
