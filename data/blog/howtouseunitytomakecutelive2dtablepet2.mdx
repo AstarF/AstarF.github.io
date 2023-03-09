@@ -20,9 +20,9 @@ auther_bref: '续接“如何使用unity制作萌萌的live2d桌宠”，进一�
 本文在之前的博客"如何使用unity制作萌萌的live2d桌宠"的基础上对项目继续改进，解决了屏幕自适应和交互的问题。
 
 先来看看效果：
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/1.gif#pic_center)
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/2.gif#pic_center)
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/3.gif#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/1.gif#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/2.gif#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/3.gif#pic_center)
 
 
 # 准备工作
@@ -36,7 +36,7 @@ auther_bref: '续接“如何使用unity制作萌萌的live2d桌宠”，进一�
 * 为空对象添加Mesh Filter、MeshCllider、L App Model Proxy、My Game Controller和Audio Source，相关参数参考上篇博客。
 
 运行程序应该有下面的效果
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/4.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/4.png#pic_center)
 
 # 全屏+背景透明+点击穿透+置顶
 导出程序的时候必须使背景透明，否则就谈不上桌宠了。这里直接给出背景透明+点击穿透的代码，将此代码拖动到一个空对象上，然后把相机的Clear Flags设为Solid Color，并把背景颜色调成黑色。（[代码基于这篇博客修改](https://blog.csdn.net/q493201681/article/details/65936592)）
@@ -112,18 +112,18 @@ public class TablePetBackSample : MonoBehaviour
 }
 ```
 相机参数：
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/5.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/5.png#pic_center)
 
 
 注意代码中strProduct一定要与Inspector种的Product Name一致，否则会出现奇怪的Bug（**很重要，可能会影响unity导出的同名程序使用**）。
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/6.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/6.png#pic_center)
 效果如下：
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/7.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/7.png#pic_center)
 可以看到背景是透明的，而且不妨碍鼠标网页的交互。
 
 # 屏幕自适应
 桌宠不能挡在中间影响我们正常使用电脑，我们需要让她处于右下角的位置并适应屏幕分辨率。首先我们需要把相机的Projection调整为Orthographic，
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/8.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/8.png#pic_center)
 然后编写可以根据屏幕分辨率动态的调整桌宠的大小和位置的代码。代码如下，把代码拖到有live2d组件的对象上（即haru上）就可。
 ```
 using UnityEngine;
@@ -153,7 +153,7 @@ public class RolePositionControl : MonoBehaviour
 ```
 
 效果如下：
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/9.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/9.png#pic_center)
 
 # 交互
 现在我们的桌宠只能看不能摸，也不会发出声音，下面我们来编写一些交互的代码。本人不熟悉unity的live2d编程，所以直接参照live2d框架中My Game Controller进行简单的改写。代码如下，为了不影响原来的包可以新建一个自己的My Game Controller组件（此处我命名为GameControl_X ），然后替换替换haru上的My Game Controller。
@@ -241,6 +241,6 @@ public class GameControl_X: MonoBehaviour
 ```
 
 效果如下，鼠标按下后haru会看向鼠标的位置，也可以做点击、摸头等交互。
-![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet/10.png#pic_center)
+![在这里插入图片描述](/static/blogs/howtouseunitytomakecutelive2dtablepet2/10.png#pic_center)
 ***
 到此大功告成，懂live2d的同学还可以将haru替换成自己喜欢的萌物。
