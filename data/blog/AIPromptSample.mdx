@@ -7,7 +7,7 @@ draft: false
 summary: '没有深奥的魔法，stable diffusion的Prompt语法就是如此很简单'
 layout: PostLayoutCenter
 bibliography: references-data.bib
-title_img: '/static/blogs/AIPromptSample/AIR1.png'
+title_img: '/static/blogs/AIPromptSample/sample.png'
 auther_bref: '“万事皆虚，万事皆允” 大家都喜欢把简单的事情理论化、复杂化。什么都不看遵从自己的本心也许未必是坏事，花几分钟浏览下此文也可，毕竟我们中大多数只是过往的看客。'
 ---
 
@@ -15,11 +15,20 @@ auther_bref: '“万事皆虚，万事皆允” 大家都喜欢把简单的事�
 ## 前提条件
 本文只涉及Prompt的书写规则，因此我假设你已经配置好了stable diffusion webui或者其他类似应用，并且至少成功跑出过一张图。
 
-## 相关术语
+本文无任何技巧性内容，只介绍能让你随心所欲出图的最基本规则。
 
-* Prompt：提示词，顾名思义你写什么AI就可能生成什么，常用英文。
-* Negative Prompt：负面提示词，你写什么AI就避免生成什么，常用英文。
-* 权重：一个小数，表示提示词的重要程度。
+本文只展示结果，省略了大多数分析过程，还请大家多多包含。
+
+本文确实参照许多大佬的文献和作品，非常感谢这些大佬在AI图像方面的贡献。
+
+如果你跑过图，你应当知道下面这些最基础的概念：
+
+Prompt：提示词，顾名思义你写什么AI就可能生成什么，常用英文。
+
+Negative Prompt：负面提示词，你写什么AI就避免生成什么，常用英文。
+
+权重：一个小数，表示提示词的重要程度。
+
 
 ## 除Prompt的其他参数
 本文所有的图都是在按照如下参数跑出来的
@@ -28,15 +37,22 @@ auther_bref: '“万事皆虚，万事皆允” 大家都喜欢把简单的事�
 
 > Time taken: 18.62sTorch active/reserved: 6878/9184 MiB, Sys VRAM: 11616/12288 MiB (94.53%)
 
+另外本文所有负面Prompt都是一致的，即
+
+**Negative prompt**:
+> worst quality, low quality, malformed hands,poorly drawn hand,mutated fingers,extra limbs,poorly drawn face, monochrome, zombie,word
+
 # Prompt书写规则
 
 ## 基本用法
 
 先看一段示例
 
-> Prompt: masterpiece, best quality, ultra-detailed,detailed background,beautiful detailed face,high quality,extremely detailed,1girl,hood,upper body,blood,(red eye) AND (black hair),sad,A girl who is using magic and creates a magic circle,highest quallity, black light particles,illustration, cinematic light,
+**Prompt**:
+> masterpiece, best quality, ultra-detailed,detailed background,beautiful detailed face,high quality,extremely detailed,1girl,hood,upper body,blood,(red eye) AND (black hair),sad,A girl who is using magic and creates a magic circle,highest quallity, black light particles,illustration, cinematic light,
 
-> Negative prompt:worst quality, low quality, malformed hands,poorly drawn hand,mutated fingers,extra limbs,poorly drawn face, monochrome, zombie,word
+**Negative prompt**:
+> worst quality, low quality, malformed hands,poorly drawn hand,mutated fingers,extra limbs,poorly drawn face, monochrome, zombie,word
 
 非常普通的描述，没有任何花哨的语法，通过这些描述跑出的图这样的
 
@@ -67,9 +83,9 @@ auther_bref: '“万事皆虚，万事皆允” 大家都喜欢把简单的事�
 
 请查看示例：
 
-> masterpiece, best quality, ultra-detailed,detailed background,beautiful detailed face,high quality,extremely detailed,1girl,hood,upper body,(blood:1.4),(red eye) AND (black hair),sad,A girl who is using magic and creates a magic circle,highest quallity, black light particles,illustration, cinematic light,
+> masterpiece, best quality, ultra-detailed,detailed background,beautiful detailed face,high quality,extremely detailed,1girl,(hood:1.2),upper body,(blood:1.4),(red eye) AND (black hair),sad,A girl who is using magic and creates a magic circle,highest quallity, black light particles,illustration, cinematic light,
 
-相比于之前只改了两处：hood -> (bood:1.4) , blood -> (blood:1.4) , 之前明明写了blood却没什么效果，接下来我们把他增强一些，以下结果：
+相比于之前只改了两处：hood -> (hood:1.4) , blood -> (blood:1.4) , 之前明明写了blood却没什么效果，接下来我们把他增强一些，以下结果：
 
 ![sampleimg1](/static/blogs/AIPromptSample/sample2.png#pic_center)
 
@@ -88,18 +104,18 @@ $$
 
 ## 特效
 
-适当加一些描述画面的词能达到意想不到的效果，并且之前的描述中已经包含不少特效了，我们加一个镜头，再跑一下：
+适当加一些描述画面的词能达到意想不到的效果，并且之前的描述中已经包含不少特效了，我们加一个镜头(注意最后的逗号，加不加结果不同)，再跑一下：
 
-> masterpiece, best quality, ultra-detailed,detailed background,beautiful detailed face,high quality,extremely detailed,1girl,hood,upper body,(blood:1.4),(red eye) AND (black hair),sad,A girl who is using magic and creates a magic circle,highest quallity, black light particles,illustration, cinematic light,medium view
+> masterpiece, best quality, ultra-detailed,detailed background,beautiful detailed face,high quality,extremely detailed,1girl,(hood:1.2),upper body,(blood:1.4),(red eye) AND (black hair),sad,A girl who is using magic and creates a magic circle,highest quallity, black light particles,illustration, cinematic light,close up,
 
 效果如下：
 
-![sampleimg1](/static/blogs/AIPromptSample/sample3.png#pic_center)
+![sampleimg1](/static/blogs/AIPromptSample/sample3_3.png#pic_center)
 
-直接分析，上面的文字包含：
+​人物靠近了，而上面的有很多特效相关的描述，总结如下：
 
 * 质量：masterpiece, best quality, ultra-detailed,detailed background,beautiful detailed face,high quality,extremely detailed,highest quallity
-* 镜头：medium view
+* 镜头：close up
 * 光影：black light particles, cinematic light
 * 画风：illustration
 
@@ -180,10 +196,7 @@ $$
 
 
 
-# 结尾
+# 参考文献
+[《元素法典》](https://docs.qq.com/doc/DWHl3am5Zb05QbGVs?)
 
-**为什么一些语法不起作用？**
-
-时代在进步，算法在更新，请尝试使用最新版webui。
-
-就这些了，之后要是有想到的东西再加吧
+[《元素同典确实不完全科学的魔导书》](https://docs.qq.com/doc/DWFdSTHJtQWRzYk9k)
