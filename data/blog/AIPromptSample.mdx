@@ -39,7 +39,6 @@ Negative Prompt：负面提示词，你写什么AI就避免生成什么，常用
 
 另外本文所有负面Prompt都是一致的，即
 
-**Negative prompt**:
 > worst quality, low quality, malformed hands,poorly drawn hand,mutated fingers,extra limbs,poorly drawn face, monochrome, zombie,word
 
 # Prompt书写规则
@@ -119,7 +118,9 @@ $$
 * 光影：black light particles, cinematic light
 * 画风：illustration
 
-全是特效的功劳啊，大家可以自己试一试其他特效的描述词
+原来上面的图全是特效的功劳啊，大家可以自己试一试其他特效的描述词
+
+下面的参考文献里有更多更详细的介绍，建议大家都去看看。
 
 ## 融合Prompt
 
@@ -175,6 +176,10 @@ $$
 ## 适当地使用现实的经验
 
 为何不把你在现实中看到的景象如实地告诉AI呢，画面里有些元素总是一起出现的，例如天空和白云、无头和学姐，画师是这么画的，AI是这么学的，你把这些告诉AI之后大概率可以得到满意的结果。
+
+## 关于逗号
+
+多输入一个逗号都会导致生成不同的图，这可以理解，机器并不会过滤某些词，而是把所有词都编码、然后一起喂给AI模型，Prompt结尾的逗号虽然没什么意义但也被作为描述输入到模型，其中的转换过程不得而知，但从结论上来说，逗号起到了添加噪声的效果。
 
 # 模板？
 
