@@ -40,7 +40,7 @@ export default function PostLayoutCenter({ content, authorDetails, next, prev, c
   const { filePath, path, slug, date, title, tags, auther_bref, title_img } = content
   const basePath = path.split('/')[0]
   const [loadComments, setLoadComments] = useState(false)
-  const [ids, setIds] = React.useState<Array<{ id: string; title: string }>>([])
+  const [ids, setIds] = React.useState<Array<{ id: string; title: string;depth:number }>>([])
 
   React.useEffect(() => {
     const titles = content.toc
@@ -51,6 +51,7 @@ export default function PostLayoutCenter({ content, authorDetails, next, prev, c
       }) as Array<{
         id: string
         title: string
+        depth:number
       }>
     setIds(idArrays)
   }, [])
@@ -237,7 +238,7 @@ export default function PostLayoutCenter({ content, authorDetails, next, prev, c
                   </dl>
                 </div>
                 <div className="divide-y divide-gray-200 dark:divide-gray-700 xl:col-span-4 xl:row-span-2 xl:pb-0">
-                  <div className="prose max-w-none pt-10 pb-8 dark:prose-dark">{children}</div>
+                  <div className="prose max-w-none pt-10 pb-8 dark:prose-dark content-container">{children}</div>
                   <div className="pt-6 pb-6 text-sm text-gray-700 dark:text-gray-300">
                     <Link href={discussUrl(path)} rel="nofollow">
                       <span className='bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-pink-500'>

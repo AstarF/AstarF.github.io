@@ -25,6 +25,14 @@ const Table_of_Contents = ({ ids }: TableOfContentProps) => {
     { offset: OFFSET }
   )
 
+  function space(number){
+    let str = ""
+    for(let i=0;i<number;++i){
+      str+="\u00A0\u00A0\u00A0"
+    }
+    return str;
+  }
+
   if (ids.length > 0) {
     return (
       <div className="mt-8 table-of-contents">
@@ -43,7 +51,7 @@ const Table_of_Contents = ({ ids }: TableOfContentProps) => {
                 // }
                 >
                   <li key={item.url} className="py-0.5 text-sm">
-                    {item.value}
+                    {space(item.depth)+item.value}
                   </li>
                 </span>
               </Link>

@@ -1,6 +1,6 @@
 ---
 title: 'AI图像生成之Prompt解析-简明版'
-date: 2023-03-011T14:34:14Z
+date: 2023-03-06T14:30:14Z
 lastmod: '2023-03-11'
 tags: ['AI', 'stable diffusion', 'prompt']
 draft: false
@@ -11,26 +11,26 @@ title_img: '/static/blogs/AIPromptSample/AIR1.png'
 auther_bref: '“万事皆虚，万事皆允” 大家都喜欢把简单的事情理论化、复杂化。什么都不看遵从自己的本心也许未必是坏事，花几分钟浏览下此文也可，毕竟我们中大多数只是过往的看客。'
 ---
 
-## 说明
-### 前提条件
+# 说明
+## 前提条件
 本文只涉及Prompt的书写规则，因此我假设你已经配置好了stable diffusion webui或者其他类似应用，并且至少成功跑出过一张图。
 
-### 相关术语
+## 相关术语
 
 * Prompt：提示词，顾名思义你写什么AI就可能生成什么，常用英文。
 * Negative Prompt：负面提示词，你写什么AI就避免生成什么，常用英文。
 * 权重：一个小数，表示提示词的重要程度。
 
-### 除Prompt的其他参数
+## 除Prompt的其他参数
 本文所有的图都是在按照如下参数跑出来的
 
 > Steps: 20, Sampler: DPM++ 2M Karras, CFG scale: 8, Seed: 2484682528, Size: 512x384, Model hash: 56be194f47, Model: cetusMix_cetusVersion2Fp16, Denoising strength: 0.7, Hires upscale: 2, Hires upscaler: Latent
 
 > Time taken: 18.62sTorch active/reserved: 6878/9184 MiB, Sys VRAM: 11616/12288 MiB (94.53%)
 
-## Prompt书写规则
+# Prompt书写规则
 
-### 基本用法
+## 基本用法
 
 先看一段示例
 
@@ -59,7 +59,7 @@ auther_bref: '“万事皆虚，万事皆允” 大家都喜欢把简单的事�
 
 
 
-### 加权Prompt
+## 加权Prompt
 
 *不公是常态，哪怕对于文字。*
 
@@ -86,7 +86,7 @@ $$
 
 **范围**：一般写0-2之间，当然你写100也是可以的
 
-### 特效
+## 特效
 
 适当加一些描述画面的词能达到意想不到的效果，并且之前的描述中已经包含不少特效了，我们加一个镜头，再跑一下：
 
@@ -105,7 +105,7 @@ $$
 
 全是特效的功劳啊，大家可以自己试一试其他特效的描述词
 
-### 融合Prompt
+## 融合Prompt
 
 将两种物体融为一体（创造新生物？）
 
@@ -113,6 +113,11 @@ $$
 
 >  masterpiece, best quality, ultra-detailed,detailed background,beautiful detailed face,high quality,extremely detailed,[1girl:10|rabbit:10],(hood:1.2),upper body,(blood:1.4),(red eye) AND (black hair),sad,A girl who is using magic and creates a magic circle,highest quallity, black light particles,illustration, cinematic light,medium view
 
+结果如下：
+
+![sampleimg32](/static/blogs/AIPromptSample/sample3_2.png#pic_center)
+
+头上确实有了兔耳朵一样的物体。
 
 **语法**：
 
@@ -121,7 +126,7 @@ $$
 * 多步：[a | b | c | ...]
 * step:据说小于1时表示总的步数的百分比，大于1时表示步数
 
-### 分步Prompt
+## 分步Prompt
 
 相对于融合Prompt方法最终的结果有点割裂的感觉
 
@@ -142,20 +147,20 @@ $$
 * 省略：[a: : step]  ,[ : b : step] 
 * step:据说小于1时表示总的步数的百分比，大于1时表示步数
 
-## 基于模型训练的猜测
+# 基于模型训练的猜测
 
 大家都应该知道，sd模型使用现实中的作品训练出来的(造成版权问题的根源)，所以训练数据会对模型的效果产生很大的影响。
 
-### 不可解释的东西：无意义符号
+## 不可解释的东西：无意义符号
 
 并不是所有文字都能被AI理解，比如说“+++++++------”，我们看这段符号无法看出任何意义，机器也一样，这意味着我们可以用这些符号作为占位符，把相邻的一些Prompt分隔。
 
 
-### 适当地使用现实的经验
+## 适当地使用现实的经验
 
 为何不把你在现实中看到的景象如实地告诉AI呢，画面里有些元素总是一起出现的，例如天空和白云、无头和学姐，画师是这么画的，AI是这么学的，你把这些告诉AI之后大概率可以得到满意的结果。
 
-## 模板？
+# 模板？
 
 个人很反感模板，但不得不承认，用起来是真香。
 
@@ -175,7 +180,7 @@ $$
 
 
 
-## 结尾
+# 结尾
 
 **为什么一些语法不起作用？**
 

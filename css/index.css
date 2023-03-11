@@ -45,6 +45,11 @@
     top:50px;
 }
 
+.content-container img{
+    border-radius: 20px;
+    box-shadow: 2px 2px 10px #343434;
+}
+
 @media all and (max-aspect-ratio: 3/5) {
     .ppage-topback {
         height: 20vh;
