@@ -182,7 +182,7 @@ PHOENIX是一个基于模块的、事件驱动的web服务器，其工作流程�
 * Event/Dynamic：这部分包含PHOENIX在运行中生成的对象，包含connection和event。connection对应于一个连接或者文件描述符，记录连接相关的属性，而每个connection包含三类事件：读事件、写事件和超时事件。每当收到一个tcp连接的时候，就会生成一个connection对象，同时，会根据预先定义好的模块，初始化connection对象的读写超时事件。
 * Epoll/Dynamic：PHOENIX使用linux提供的epoll方法实现了了一个非阻塞的I/O多路复用程序，每当初始化、收到新的连接、读事件执行完毕、写事件执行完毕或者是超时事件执行完毕时，PHOENIX都可能向I/O多路复用程序注册并监听新的事件。而每当事件发生时，I/O多路复用程序都会通知当前线程事件就绪。线程收到通知后，会按照事件的优先级以不同的策略处理事件。
 
-![ph1](/static/blogs/PhoenixIntroduce/PHOENIX (1).jpg)
+![ph1](/static/blogs/PhoenixIntroduce/PHOENIX_1.jpg)
 
 接下来我们以一个http请求的处理过程为例说明PHOENIX的工作方式。
 
@@ -220,7 +220,7 @@ module_link：
 
 module_process：
 
-![image-20220620153103522](/static/blogs/PhoenixIntroduce/PHOENIX_4_.jpg)
+![image-20220620153103522](/static/blogs/PhoenixIntroduce/PHOENIX_4.jpg)
 
 
 ## Event
