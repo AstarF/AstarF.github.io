@@ -1,0 +1,213 @@
+---
+title: '☆~世界を超えるまで！~☆ BLACK★ROCK SHOOTER Lora训练日记(一)'
+date: 2023-03-20T21:20:14Z
+lastmod: '2023-03-20'
+tags: ['AI', 'stable diffusion', 'prompt','BRS','BLACK★ROCK SHOOTER','Lora']
+draft: false
+summary: '苍蓝的火焰于黑暗炸裂，直到超越世界'
+layout: PostLayoutCenter
+bibliography: references-data.bib
+title_img: '/static/blogs/BRS_diary/data5.png'
+auther_bref: '黑岩10年老粉，没有技术力，只有眼泪。'
+---
+
+# 致谢
+感谢全世界创作过黑岩的艺术家，尤其感谢Huke大神的创作这个角色
+
+最近开始研究如何训练Lora，感谢各位技术大佬，以下是自接触过Lora训练以来参照过的教程，在此一一列出：
+
+* [【AI绘画】最佳人物模型训练！保姆式LoRA模型训练教程 一键包发布](https://www.bilibili.com/video/BV1fs4y1x7p2/?spm_id_from=333.999.0.0&vd_source=689c5b6343f7e7817de493345dea553e)
+
+* [《喂饭级Lora绘图模型训练教程》](https://www.bilibili.com/read/cv22274249?spm_id_from=333.999.0.0)
+
+* [AI绘画】lora干货！新手小进阶（上）！三种打标方式对比及正则化对人物训练作用讨论](https://www.bilibili.com/read/cv22475403?from=search&spm_id_from=333.337.0.0)
+
+* [《AI绘画Stable Diffusion中文界面安装及Lora使用方法》](https://www.bilibili.com/video/BV1XT411Y71F/?spm_id_from=333.337.search-card.all.click&vd_source=689c5b6343f7e7817de493345dea553e)
+
+* [入门必看 C站模型下载与使用指南](https://www.bilibili.com/video/BV19L411676Z/?spm_id_from=333.880.my_history.page.click&vd_source=689c5b6343f7e7817de493345dea553e)
+
+* [5分钟搞定Stable Diffusion环境配置，消灭奇怪的报错](https://www.bilibili.com/video/BV1k54y1T7Lf/?spm_id_from=333.1007.top_right_bar_window_history.content.click&vd_source=689c5b6343f7e7817de493345dea553e)
+
+训练模型的代码来自秋葉aaak佬，感谢
+
+# 最新结果：
+
+C站：https://civitai.com/models/21358/blackrockshooterlora
+
+# 第一天，瞎搞
+
+## 电脑配置：
+
+先用自己的电脑训练，参数如下：
+
+处理器：12th Gen Intel(R) Core(TM) i5-12490F 3.00 GHz
+
+内存：32.0 GB
+
+显卡：NVIDIA GeForce RTX 3060 显存12GB
+
+操作系统：Win10
+
+python环境：anaconda，其中:
+
+python：3.10.6
+
+torch: 1.13.0+cu117
+
+## 流程总结以及问题记录
+**1. 搜集数据，听说可以用很少的样本训练Lora，所以只收集了20张左右的图片，而且风格各异**
+
+![data1](/static/blogs/BRS_diary/data1.png#pic_center)
+
+**2. 环境配置，之前配置过webui的conda的环境，直接在其基础上新下载一些包即可。**
+**3. 处理数据，按照教程使用webui中Train标签页里的Preprocess images，存储文件名一律为“5_xxx”（居然把所有图片都放在一个文件夹里了，也不知道对不对）**
+
+* 坑1：命令行访问git总是提示SSL错误，之前提示过配置好了，后来又出问题了，所以干脆去github上下载源码
+
+* 坑2：提前调研一下显卡显存与模型训练之间的关系，图像宽高别设太大，我的图像都设置成512*512的
+
+* 坑3：别忘了勾选Use deepbooru for caption
+
+![data2](/static/blogs/BRS_diary/data2.png#pic_center)
+
+**4. 训练：打开train.ps1设置相关数据位置，设置底模位置(我使用的是cetusMis,因为比较喜欢)，max_train_epoches设置成15，其他配置没变，就按照默认**
+
+* 坑1：我是使用ananconda配置环境的，发现缺失环境。因为只看到了lora-scripts文件夹下的install.ps1，没看到sd-scripts里的requirements.txt
+
+* 坑2：又是访问不了github，xformer下载失败，后来看到有的教程里说把train.ps1最底下的x-fromer拿一行删掉就行了
+
+* 坑3：use_8bit_adam=1导致出错，报C++编译出错，设置成0就好
+
+**5. 等待，验证**
+
+## 结果
+
+效果不太好，脸和手都崩了
+
+![data3](/static/blogs/BRS_diary/data3.png#pic_center)
+
+不管怎样总归是走了一个流程了，之后再试试有什么改进吧。
+
+## 总结
+
+果然不是随便训一下就能得到好结果的，感觉还有几个方面可以考虑:
+
+1. 比起手，脸崩了是更不能忍受的，得想办法解决脸崩的问题
+
+2. 画风觉得怪怪的，不是想要的感觉，应该是数据集画风太杂了
+
+3. 人物动作都差不多
+
+# 第二天 有进步
+
+电脑配置如上
+
+## 流程总结以及问题记录
+
+大体流程不变，按照第一天的思路，对数据集进行处理
+
+**1. 尽可能保持画风一致**
+
+**2. 也许应该增加一些头部特写**
+
+**3. 看教程上说数据的tag可以分为全标、半标、删特征、仅唤起。所以把数据的标签乱删了一通（偷懒了，没仔细考虑）**
+
+
+
+![data4](/static/blogs/BRS_diary/data4.png#pic_center)
+
+## 结果
+
+经过无数次实验之后，结果如下，相对来说有所进步，画出了一些特征。
+
+![data5](/static/blogs/BRS_diary/data5.png#pic_center)
+
+![data6](/static/blogs/BRS_diary/data6.png#pic_center)
+
+![data7](/static/blogs/BRS_diary/data7.png#pic_center)
+
+![data8](/static/blogs/BRS_diary/data8.png#pic_center)
+
+![data9](/static/blogs/BRS_diary/data9.png#pic_center)
+
+## 总结
+
+1. 脸部的特征有些了，比如说圈圈眼，火焰，无表情等
+
+2. 四肢还是不行，事实上生成头像还行，生成全身像大都会崩
+
+3. 画风好了些
+
+这次的改进主要是针对数据集，当我发现自己不知道如何删特征时干脆就放弃了删特征，都没收敛还考虑什么泛化性能呢。
+
+# 第三天 进一步细化数据集
+
+看教程的过程中发现**不同服装同角色的训练集放到不同文件夹里，而且通过repeat之后总数相近比较合适**，于是今天主要围绕这个思想进行细化实验。
+
+## 电脑配置：
+
+由于实验室同学跑图把电脑烧了(不是，其实是进水了)，而且显存貌似还不够的样子，于是决定用服务器试试。
+
+配置如下：
+
+处理器：15 vCPU Intel(R) Xeon(R) Platinum 8358P CPU @ 2.60GHz
+
+内存：80.0 GB
+
+显卡：NVIDIA GeForce RTX 3090 显存35GB
+
+操作系统：Linux
+
+python环境：anaconda，其中:
+
+python：3.10.8
+
+torch: 1.12.1+cu116
+
+## 流程总结以及问题记录
+
+依然对数据集进行处理，没办法目前只会对数据集处理
+
+**1. 配环境，依然用anaconda，运行install.bash,用conda或者pip下载sd-scripts里的requirements。**
+
+* 坑1：conda和pip需要设置清华源，否则慢得要死。
+
+* 坑2：要下载python3.10以上的版本。下了个3.8直接哭了。
+
+**2. 扩充数据集，增加了狂岩以及其他角色，此外给每张图片添加特写，主要是头部、上半身和先半身**
+
+**3. 将同一角色不同衣服和不同角色放在不同文件夹**
+
+**4. 为方便起见，打标方式为全标**
+
+![data10](/static/blogs/BRS_diary/data10.png#pic_center)
+
+**5. 训练，换了服务器出手也阔绰了起来了，图片直接设置成1024X768，结果爆显存了......**
+
+**6. 再训练，图片设置成768X768，结果还是爆显存，最后设置成640X640，batch_size为1，network_dim和network_alpha为128**
+
+## 结果
+
+在漫长的等待之后结果如下：
+
+![data11](/static/blogs/BRS_diary/data11.png#pic_center)
+
+![data13](/static/blogs/BRS_diary/data13.png#pic_center)
+
+![data14](/static/blogs/BRS_diary/data14.png#pic_center)
+
+![data16](/static/blogs/BRS_diary/data15.png#pic_center)
+
+![data12](/static/blogs/BRS_diary/data12.png#pic_center)
+
+## 总结
+
+感觉画风和我中所想比较像了，有的图也能出标志性的五角星了，不过手炮还是有点问题,人物也有时会崩。
+
+有的人物阴影处有小点，看漫画的时候见过这种上色方式，得想办法去掉。
+
+最后，毫无疑问，模型过拟合了。
+
+接下来还要继续调整，Tag基本上没动，正则化也没用，网络参数也没改，数据也质量和数量也不够，要走的路还有很长......
+
+# 第四天 休息！(然而要写论文)
