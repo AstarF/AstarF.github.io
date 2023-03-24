@@ -1,0 +1,133 @@
+---
+title: '☆~世界を超えるまで！~☆ BLACK★ROCK SHOOTER Lora训练日记(二)'
+date: 2023-03-24T23:44:14Z
+lastmod: '2023-03-24'
+tags: ['AI', 'stable diffusion', 'prompt','BRS','BLACK★ROCK SHOOTER','Lora']
+draft: false
+summary: '苍蓝的火焰于黑暗炸裂，直到超越世界'
+layout: PostLayoutCenter
+bibliography: references-data.bib
+title_img: '/static/blogs/BRS_diary2/data12.png'
+auther_bref: '黑岩10年老粉，没有技术力，只有眼泪。'
+---
+
+# 每一次都有的 致谢
+感谢全世界创作过黑岩的艺术家，尤其感谢Huke大神的创作这个角色
+
+最近开始研究如何训练Lora，感谢各位技术大佬，以下是自接触过Lora训练以来参照过的教程，在此一一列出：
+
+* [【AI绘画】最佳人物模型训练！保姆式LoRA模型训练教程 一键包发布](https://www.bilibili.com/video/BV1fs4y1x7p2/?spm_id_from=333.999.0.0&vd_source=689c5b6343f7e7817de493345dea553e)
+
+* [《喂饭级Lora绘图模型训练教程》](https://www.bilibili.com/read/cv22274249?spm_id_from=333.999.0.0)
+
+* [AI绘画】lora干货！新手小进阶（上）！三种打标方式对比及正则化对人物训练作用讨论](https://www.bilibili.com/read/cv22475403?from=search&spm_id_from=333.337.0.0)
+
+* [《AI绘画Stable Diffusion中文界面安装及Lora使用方法》](https://www.bilibili.com/video/BV1XT411Y71F/?spm_id_from=333.337.search-card.all.click&vd_source=689c5b6343f7e7817de493345dea553e)
+
+* [入门必看 C站模型下载与使用指南](https://www.bilibili.com/video/BV19L411676Z/?spm_id_from=333.880.my_history.page.click&vd_source=689c5b6343f7e7817de493345dea553e)
+
+* [5分钟搞定Stable Diffusion环境配置，消灭奇怪的报错](https://www.bilibili.com/video/BV1k54y1T7Lf/?spm_id_from=333.1007.top_right_bar_window_history.content.click&vd_source=689c5b6343f7e7817de493345dea553e)
+
+训练模型的代码来自秋葉aaak佬，感谢
+
+# 最新结果：
+
+C站：https://civitai.com/models/21358/blackrockshooterlora
+
+示例：
+
+比较懒惰，找到了一个好的词条就一直用了
+
+> Prompt: 1girl, black rock shooter (character),disorder, star, dilapidated scene, dilapidated ,  looking at viewer,  glowing,twintails,
+
+> Negative prompt: worst quality, low quality, malformed hands,poorly drawn hand,mutated fingers,extra limbs,poorly drawn face, monochrome, zombie,word,
+
+以下是结果：
+
+Stable Diffusion Model:CetusMix 训练的底模
+
+![data10](/static/blogs/BRS_diary2/data2.png#pic_center)
+
+![data10](/static/blogs/BRS_diary2/data3.png#pic_center)
+
+![data10](/static/blogs/BRS_diary2/data4.png#pic_center)
+
+![data10](/static/blogs/BRS_diary2/data5.png#pic_center)
+
+Stable Diffusion Model:9527_v10.ckpt 这个模型跑出来的图很像初音
+
+![data10](/static/blogs/BRS_diary2/data6.png#pic_center)
+
+![data10](/static/blogs/BRS_diary2/data7.png#pic_center)
+
+![data10](/static/blogs/BRS_diary2/data8.png#pic_center)
+
+Stable Diffusion Model:meinamix_meinaV7.safetensors 有些纯真？
+
+![data10](/static/blogs/BRS_diary2/data10.png#pic_center)
+
+![data10](/static/blogs/BRS_diary2/data11.png#pic_center)
+
+![data10](/static/blogs/BRS_diary2/data12.png#pic_center)
+
+Stable Diffusion Model:dalcefoV3Anime_dalcefoV3Anime
+
+![data10](/static/blogs/BRS_diary2/data13.png#pic_center)
+
+![data10](/static/blogs/BRS_diary2/data14.png#pic_center)
+
+![data10](/static/blogs/BRS_diary2/data15.png#pic_center)
+
+
+# 电脑配置：
+
+配置如下：
+
+处理器：15 vCPU Intel(R) Xeon(R) Platinum 8358P CPU @ 2.60GHz
+
+内存：80.0 GB
+
+显卡：NVIDIA GeForce RTX 3090 显存35GB
+
+操作系统：Linux
+
+python环境：anaconda，其中:
+
+python：3.10.8
+
+torch: 1.12.1+cu116
+
+# 流程总结以及问题记录
+
+依然对数据集进行处理，没办法目前只会对数据集处理
+
+**1. 对数据集进行了扩充共，计186张图片，然后将其分成三个文件夹存放。，依然给每张图片添加特写，但是训练过程中发现Lora就爱画腿，于是大幅减少腿的特写**
+
+
+![data10](/static/blogs/BRS_diary2/data1.png#pic_center)
+
+* 4_black_rock_shooter：该文件夹中的数据画风接近p站原作者
+
+* 4 _changecloth：其他画风
+
+* 4_other：其他角色
+
+**2. 调整Tag，删掉了黑岩一些外形相关的Tag，比如说双马尾，黑色外套，蓝色眼睛，眼睛冒火等**
+
+**4. 调整训练参数，训练图像大小设置为640*768，noise_offset设定为0.1，使用 Lion 优化器，减少学习率，开启persistent_data_loader_workers（感觉没加速多少，估计是数据量少吧）**
+
+**5. 训练，底模测试了几个，还是感觉 CetusMix 好，下次再试试其他底模看看**
+
+# 结果
+
+都放在上面了，有爱自取
+
+# 总结
+
+就个人而言，这次跑出的图的质量还是有所进步的，另外模型的泛化性也好了点，试了其他几个底模效果有的好有的不好。
+
+还是没搞懂正则化，因此先没用。
+
+对Tag进行处理确实比较重要，删掉Tag意味着让训练出来的Lora学会这个Tag表示的特征，比如说我删除了 flaming eye ，那么大部分画出来的图都会画出黑岩左眼冒出的蓝色火焰。
+
+可以用其他模型搭配本Lora跑图，有的效果好有的效果差，总归还是训练的底模能抛出更多人物细节。
